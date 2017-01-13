@@ -35,16 +35,23 @@ I highly recommend re-running the alignment_assessment.py script and look throug
 Master_Alignment_Assessment.txt file to see how well this refinement performed. You can change the parameters
 involved with option (d) to clean your data set, and I don't have default recommendations. 
 
-
-##############
-DEPENDENCIES:
-numpy - Numerical Python
-trimal v 1.4 (needs to be in path to call as 'trimal')
-##############
-
-------------------------
 written for Python 2.7.3
-Dan Portik
-daniel.portik@berkeley.edu
-August 2015
+
+DEPENDENCIES:
+
+numpy - Numerical Python
+
+trimal v 1.4 (needs to be in path to call as 'trimal')
+
+
 ------------------------
+
+Dan Portik
+
+daniel.portik@berkeley.edu
+
+August 2015
+
+If you use this script, please cite:
+
+Portik, D.M., Smith, L.L., and K. Bi. 2016. An evaluation of transcriptome-based exon capture for frog phylogenomics across multiple scales of divergence (Class: Amphibia, Order: Anura). Molecular Ecology Resources 16: 1069–1083.

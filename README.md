@@ -16,7 +16,7 @@ b. Remove sequences from all alignments using a missing data threshold (ex. only
 - Trims out all sequences above missing data threshold and creates new phylip files and 
    a log file to 'Output_Refinement/' directory. The log file records missing data levels for 
    the sequences that are removed per alignment. You should look at this, sometimes sequences
-   have extremely high missing data levels (99%). 
+   have extremely high missing data levels (99%). Missing data calculated from gaps, N's, and ?'s.
 
 c. For alignments above a missing data threshold (ex. >15% missing data), trim the alignments again.
 - Uses trimal to do this with -gappyout -keepseqs options on. Creates new phylip files and

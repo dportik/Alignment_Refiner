@@ -107,7 +107,7 @@ for line in lines[1:]:
 
 phylip_files_here = int(0)
 for filetype in os.listdir('.'):
-    if filetype.endswith(".phylip"):
+    if filetype.endswith(".phylip") or filetype.endswith(".phy"):
         phylip_files_here += 1
 
 print '\n',"-----------------------------------------------------------------------------------------------------------",'\n',"There are {0} entries in 'Master_Alignment_Assessment.txt', and {1} phylip files in this directory.".format(aln_no, phylip_files_here),'\n',"-----------------------------------------------------------------------------------------------------------",'\n'
@@ -220,16 +220,16 @@ if decision_analysis == "a":
             contig_list.append(contig_name)
     fileshere = int(0)
     for filetype1 in os.listdir('.'):
-        if filetype1.endswith(".phylip"):
+        if filetype1.endswith(".phylip") or filetype1.endswith(".phy"):
             fileshere += 1
     filesmoved = int(0)
     for contig in contig_list:
         for filetype in os.listdir('.'):
-            if filetype.endswith(".phylip"):
+            if filetype.endswith(".phylip") or filetype.endswith(".phy"):
                 name = filetype.split('.')
                 if name[0] == contig:
                     filesmoved += 1
-                    new_name = out_dir+'/'+contig+".phylip"
+                    new_name = out_dir+'/'+contig+".phy"
                     shutil.copyfile(filetype, new_name)
                     print "{} Passed!".format(contig)
     filesleft = (fileshere - filesmoved)
@@ -254,12 +254,12 @@ elif decision_analysis == "b":
             print "That wasn't a number."
     fh_log.write("Missing data threshold for sequences = {}.".format(decision_indmiss)+'\n')
     for filetype in os.listdir('.'):
-        if filetype.endswith(".phylip"):
+        if filetype.endswith(".phylip") or filetype.endswith(".phy"):
             print "-------------------------------------------------------------------------------"
             print "Refining {}:".format(filetype)
             fh_log.write("Removed the following sequences from {}:".format(filetype)+'\n')
             name = filetype.split('.')
-            temp_name = "temp."+name[0]+".phylip"
+            temp_name = "temp."+name[0]+".phy"
             fh_temp = open(temp_name, 'a')
             with open(filetype, 'r') as fh_phy:
                 inds = int(0)
@@ -270,30 +270,31 @@ elif decision_analysis == "b":
                     inds += 1
                     line = line.strip()
                     splitline = line.split()
-                    taxon = splitline[0]
-                    sequence = splitline[1]
-                    total_bps = int(0)
-                    gaps = int(0)
-                    bps = int(0)
-                    for base in sequence:
-                        base = base.upper()
-                        if base == 'A' or base =='T' or base =='G' or base =='C' or base =='N' or base =='R' or base =='Y' or base =='S' or base =='W' or base =='K' or base =='M' or base =='B' or base =='D' or base =='H' or base =='V':
-                            bps+=1
-                            total_bps+=1
-                        elif base == '-':
-                            gaps+=1
-                            total_bps+=1
+                    if len(splitline) > int(1):
+                        taxon = splitline[0]
+                        sequence = splitline[1]
+                        total_bps = int(0)
+                        gaps = int(0)
+                        bps = int(0)
+                        for base in sequence:
+                            base = base.upper()
+                            if base == 'A' or base =='T' or base =='G' or base =='C' or base =='N' or base =='R' or base =='Y' or base =='S' or base =='W' or base =='K' or base =='M' or base =='B' or base =='D' or base =='H' or base =='V':
+                                bps+=1
+                                total_bps+=1
+                            elif base == '-' or base == 'N' or base == '?':
+                                gaps+=1
+                                total_bps+=1
 
-                    cutoff = int( float(( float(gaps) / float(total_bps)) * float(100)))
-                    present = int(100) - cutoff
-                    if cutoff >= int(decision_indmiss):
-                        fh_log.write("Removing {0}".format(taxon)+'\t'+'\t'+"[{0} bp in alignment, {1} missing, {2} present]".format(total_bps, gaps, bps)+'\t'+"[{}% bp present]".format(present)+'\t'+"[{}% missing data]".format(cutoff)+'\n')
-                        #print "Removing {0} which is missing {1}% of the data: of {2} bp, {3} missing, {4} present ({5}% present).".format(taxon, cutoff, total_bps, gaps, bps, present)
-                        ind_removed += 1
-                    elif cutoff < int(decision_indmiss):
-                        ind_kept += 1
-                        fh_temp.write(line+'\n')
-                    taxa_removed_l.append(ind_removed)
+                        cutoff = int( float(( float(gaps) / float(total_bps)) * float(100)))
+                        present = int(100) - cutoff
+                        if cutoff >= int(decision_indmiss):
+                            fh_log.write("Removing {0}".format(taxon)+'\t'+'\t'+"[{0} bp in alignment, {1} missing, {2} present]".format(total_bps, gaps, bps)+'\t'+"[{}% bp present]".format(present)+'\t'+"[{}% missing data]".format(cutoff)+'\n')
+                            #print "Removing {0} which is missing {1}% of the data: of {2} bp, {3} missing, {4} present ({5}% present).".format(taxon, cutoff, total_bps, gaps, bps, present)
+                            ind_removed += 1
+                        elif cutoff < int(decision_indmiss):
+                            ind_kept += 1
+                            fh_temp.write(line+'\n')
+                        taxa_removed_l.append(ind_removed)
                 if ind_removed == int(0):
                     undisturbed += 1
             fh_log.write('\n'+'\n')
@@ -301,7 +302,7 @@ elif decision_analysis == "b":
             fh_temp.close()
             ind_kept = str(ind_kept)
             total_bps = str(total_bps)
-            temp_name2 = "temp2."+name[0]+".phylip"
+            temp_name2 = "temp2."+name[0]+".phy"
             fh_temp2 = open(temp_name2, 'a')
             fh_temp2.write(ind_kept+" "+total_bps+'\n')
             with open(temp_name, 'r') as fh_temp:
@@ -316,7 +317,7 @@ elif decision_analysis == "b":
         if filetype.startswith('temp2.'):
             namesplit = filetype.split('.')
             name = namesplit[1]
-            move_name = out_dir+'/'+name+".phylip"
+            move_name = out_dir+'/'+name+".phy"
             shutil.copyfile(filetype, move_name)
             os.remove(filetype)
         if filetype.startswith('temp.'):
@@ -326,13 +327,13 @@ elif decision_analysis == "b":
     fh_log.close()
     print "Moving all output files to output directory."
     rem_avg, rem_min, rem_max, rem_med = quickstats(taxa_removed_l)
-    print "REMOVED SEQUENCES stats:"
+    print "\n\nREMOVED SEQUENCES stats:"
     print "----------------------------------------------------------------------------------"
     print "Average number of taxa removed across alignments = {}.".format(rem_avg)
     print "Median number of taxa removed across alignments = {}.".format(rem_med)
     print "Minimum number of taxa removed across alignments = {}.".format(rem_min)
     print "Maximum number of taxa removed across alignments = {}.".format(rem_max)
-    print "There were {0} alignments with no sequences removed (of {1}).".format(undisturbed, phylip_files_here), '\n', '\n'
+    print "There were {0} alignments with no sequences removed (of {1}).".format(undisturbed, phylip_files_here), '\n\n'
 
 ###############################################################
 #Begin definition of analysis 'c'
@@ -372,7 +373,7 @@ elif decision_analysis == "c":
     trimmed_files = int(0)
     for aln in trim_list:
         for filetype in os.listdir('.'):
-            if filetype.endswith(".phylip"):
+            if filetype.endswith(".phylip") or filetype.endswith(".phy"):
                 name = filetype.split('.')
                 if name[0] == aln:
                     trimmed_files += 1
@@ -417,7 +418,7 @@ elif decision_analysis == "c":
                                 IDseq_dict[name]+=line
                     fh_fasta2.close()
                     
-                    temp_phylip = aln+".temp.phylip"  
+                    temp_phylip = aln+".temp.phy"  
                     fh_temp_phy = open(temp_phylip, 'a')
 
                     for seq in IDseq_dict:
@@ -438,7 +439,7 @@ elif decision_analysis == "c":
 
                     taxa_no = str(taxa_no)
                     seq_length = str(seq_length)
-                    final_phylip = aln+".final.phylip"
+                    final_phylip = aln+".final.phy"
                     fh_final_phy = open(final_phylip, 'a')
                     fh_final_phy.write(taxa_no+' '+seq_length+'\n')
                     with open(temp_phylip, 'r') as fh_read:
@@ -450,24 +451,24 @@ elif decision_analysis == "c":
                     for filetype in os.listdir('.'):
                         if filetype.endswith('fasta2'):
                             os.remove(filetype)
-                        if filetype.endswith('temp.phylip'):
+                        if filetype.endswith('temp.phy'):
                             os.remove(filetype)
                         if filetype.endswith('trimmed.fasta'):
                             os.remove(filetype)
-                        if filetype.endswith('final.phylip'):
+                        if filetype.endswith('final.phy'):
                             split = filetype.split('.')
                             prefix = split[0]
-                            move_name =  out_dir+'/'+prefix+".phylip"
+                            move_name =  out_dir+'/'+prefix+".phy"
                             shutil.move(filetype, move_name)
                             
     fine_files = int(0)
     for aln in fine_list:
         for filetype in os.listdir('.'):
-            if filetype.endswith(".phylip"):
+            if filetype.endswith(".phylip") or filetype.endswith(".phy"):
                 name = filetype.split('.')
                 if name[0] == aln:
                     fine_files += 1
-                    new_name = out_dir+'/'+aln+".phylip"
+                    new_name = out_dir+'/'+aln+".phy"
                     shutil.copyfile(filetype, new_name)
 
     move_name =  out_dir+'/'+log_name
@@ -564,7 +565,7 @@ elif decision_analysis == "d":
     trimmed_files = int(0)
     for aln in trim_list:
         for filetype in os.listdir('.'):
-            if filetype.endswith(".phylip"):
+            if filetype.endswith(".phylip") or filetype.endswith(".phy"):
                 name = filetype.split('.')
                 if name[0] == aln:
                     trimmed_files += 1
@@ -609,7 +610,7 @@ elif decision_analysis == "d":
                                 IDseq_dict[name]+=line
                     fh_fasta2.close()
                     
-                    temp_phylip = aln+".temp.phylip"  
+                    temp_phylip = aln+".temp.phy"  
                     fh_temp_phy = open(temp_phylip, 'a')
 
                     for seq in IDseq_dict:
@@ -630,7 +631,7 @@ elif decision_analysis == "d":
 
                     taxa_no = str(taxa_no)
                     seq_length = str(seq_length)
-                    final_phylip = aln+".final.phylip"
+                    final_phylip = aln+".final.phy"
                     fh_final_phy = open(final_phylip, 'a')
                     fh_final_phy.write(taxa_no+' '+seq_length+'\n')
                     with open(temp_phylip, 'r') as fh_read:
@@ -642,25 +643,25 @@ elif decision_analysis == "d":
                     for filetype in os.listdir('.'):
                         if filetype.endswith('fasta2'):
                             os.remove(filetype)
-                        if filetype.endswith('temp.phylip'):
+                        if filetype.endswith('temp.phy'):
                             os.remove(filetype)
                         if filetype.endswith('trimmed.fasta'):
                             os.remove(filetype)
-                        if filetype.endswith('final.phylip'):
+                        if filetype.endswith('final.phy'):
                             split = filetype.split('.')
                             prefix = split[0]
-                            move_name =  out_dir+'/'+prefix+".temp.phylip"
+                            move_name =  out_dir+'/'+prefix+".temp.phy"
                             shutil.move(filetype, move_name)
     fh_logc.close()
                             
     fine_files = int(0)
     for aln in fine_list:
         for filetype in os.listdir('.'):
-            if filetype.endswith(".phylip"):
+            if filetype.endswith(".phy"):
                 name = filetype.split('.')
                 if name[0] == aln:
                     fine_files += 1
-                    new_name = out_dir+'/'+aln+".temp.phylip"
+                    new_name = out_dir+'/'+aln+".temp.phy"
                     shutil.copyfile(filetype, new_name)
 
     move_name =  out_dir+'/'+log_name
@@ -678,12 +679,12 @@ elif decision_analysis == "d":
     os.chdir(out_dir)
     fh_log = open('analysis_b_log.txt', 'a')
     for filetype in os.listdir('.'):
-        if filetype.endswith("temp.phylip"):
+        if filetype.endswith("temp.phy"):
             print "-------------------------------------------------------------------------------"
             print "Refining {}:".format(filetype)
             fh_log.write("Removed the following sequences from {}:".format(filetype)+'\n')
             name = filetype.split('.')
-            temp_name = "temp2."+name[0]+".phylip"
+            temp_name = "temp2."+name[0]+".phy"
             fh_temp = open(temp_name, 'a')
             with open(filetype, 'r') as fh_phy:
                 inds = int(0)
@@ -694,31 +695,32 @@ elif decision_analysis == "d":
                     inds += 1
                     line = line.strip()
                     splitline = line.split()
-                    taxon = splitline[0]
-                    sequence = splitline[1]
-                    total_bps = int(0)
-                    gaps = int(0)
-                    bps = int(0)
-                    
-                    for base in sequence:
-                        base = base.upper()
-                        if base == 'A' or base =='T' or base =='G' or base =='C' or base =='N' or base =='R' or base =='Y' or base =='S' or base =='W' or base =='K' or base =='M' or base =='B' or base =='D' or base =='H' or base =='V':
-                            bps+=1
-                            total_bps+=1
-                        elif base == '-':
-                            gaps+=1
-                            total_bps+=1
-                            
-                    cutoff = int( float(( float(gaps) / float(total_bps)) * float(100)))
-                    present = int(100) - cutoff
-                    if cutoff >= int(decision_indmiss):
-                        fh_log.write("Removing {0}".format(taxon)+'\t'+'\t'+"[{0} bp in alignment, {1} missing, {2} present]".format(total_bps, gaps, bps)+'\t'+"[{}% bp present]".format(present)+'\t'+"[{}% missing data]".format(cutoff)+'\n')
-                        #print "Removing {0} which is missing {1}% of the data: of {2} bp, {3} missing, {4} present ({5}% present).".format(taxon, cutoff, total_bps, gaps, bps, present)
-                        ind_removed += 1
-                    elif cutoff < int(decision_indmiss):
-                        ind_kept += 1
-                        fh_temp.write(line+'\n')
-                    taxa_removed_l.append(ind_removed)
+                    if len(splitline) > int(1):
+                        taxon = splitline[0]
+                        sequence = splitline[1]
+                        total_bps = int(0)
+                        gaps = int(0)
+                        bps = int(0)
+
+                        for base in sequence:
+                            base = base.upper()
+                            if base == 'A' or base =='T' or base =='G' or base =='C' or base =='N' or base =='R' or base =='Y' or base =='S' or base =='W' or base =='K' or base =='M' or base =='B' or base =='D' or base =='H' or base =='V':
+                                bps+=1
+                                total_bps+=1
+                            elif base == '-' or base == 'N' or base == '?':
+                                gaps+=1
+                                total_bps+=1
+
+                        cutoff = int( float(( float(gaps) / float(total_bps)) * float(100)))
+                        present = int(100) - cutoff
+                        if cutoff >= int(decision_indmiss):
+                            fh_log.write("Removing {0}".format(taxon)+'\t'+'\t'+"[{0} bp in alignment, {1} missing, {2} present]".format(total_bps, gaps, bps)+'\t'+"[{}% bp present]".format(present)+'\t'+"[{}% missing data]".format(cutoff)+'\n')
+                            #print "Removing {0} which is missing {1}% of the data: of {2} bp, {3} missing, {4} present ({5}% present).".format(taxon, cutoff, total_bps, gaps, bps, present)
+                            ind_removed += 1
+                        elif cutoff < int(decision_indmiss):
+                            ind_kept += 1
+                            fh_temp.write(line+'\n')
+                        taxa_removed_l.append(ind_removed)
                 if ind_removed == int(0):
                     undisturbed += 1
             fh_log.write('\n'+'\n')
@@ -726,7 +728,7 @@ elif decision_analysis == "d":
             fh_temp.close()
             ind_kept = str(ind_kept)
             total_bps = str(total_bps)
-            temp_name2 = name[0]+".phylip"
+            temp_name2 = name[0]+".phy"
             fh_temp2 = open(temp_name2, 'a')
             fh_temp2.write(ind_kept+" "+total_bps+'\n')
             with open(temp_name, 'r') as fh_temp:
@@ -738,9 +740,9 @@ elif decision_analysis == "d":
             fh_temp.close()
             print "-------------------------------------------------------------------------------", '\n'
     for filetype in os.listdir('.'):
-        if filetype.endswith('temp2.phylip'):
+        if filetype.endswith('temp2.phy'):
             os.remove(filetype)
-        if filetype.endswith('temp.phylip'):
+        if filetype.endswith('temp.phy'):
             os.remove(filetype)
         if filetype.startswith('temp2'):
             os.remove(filetype)
